@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:todo_app/data/storage/database.dart';
 import 'package:todo_app/data/storage/states.dart';
+import 'package:todo_app/utils/check_condition.dart';
 import 'package:todo_app/utils/constant/const.dart';
 
 class DoneTasks extends StatefulWidget {
@@ -25,7 +26,7 @@ class _DoneTasksState extends State<DoneTasks> {
             physics: const BouncingScrollPhysics(),
             child: Container(
               height: size.height,
-              padding: const EdgeInsets.only(left: 15, top: 15, right: 15),
+              padding: const EdgeInsets.only(left: 15, top: 15),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,110 +41,94 @@ class _DoneTasksState extends State<DoneTasks> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
-                            bool checkBoxValue;
-                            if (doneTaskList[index]["status"] ==
-                                TEXTCONST.UNDONE) {
-                              checkBoxValue = false;
-                            } else {
-                              checkBoxValue = true;
-                            }
+                            bool checkBoxValue = getUpdatedStatusBool(
+                                doneTaskList[index]["status"]);
                             return Padding(
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10.0),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10.0)),
+                                  borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(10.0),
+                                      bottomLeft: Radius.circular(10.0)),
                                   color: checkBoxValue == false
                                       ? COLORCONST.ORANGE
                                       : COLORCONST.GREEN,
                                 ),
                                 height: size.height * 0.1,
-                                child: SafeArea(
-                                    top: false,
-                                    bottom: false,
-                                    child: IntrinsicHeight(
-                                      child: Slidable(
-                                        key: Key(doneTaskList[index]["title"]),
-                                        endActionPane: ActionPane(
-                                          motion: const ScrollMotion(),
-                                          children: [
-                                            SlidableAction(
-                                              onPressed: (context) {
-                                                AppDataBase.get(context)
-                                                    .deleteFromDB(
-                                                        doneTaskList[index]
-                                                            ["id"]);
-                                              },
-                                              backgroundColor: COLORCONST.RED,
-                                              foregroundColor: COLORCONST.WHITE,
-                                              icon: Icons.delete,
-                                              label: "Delete",
-                                            ),
-                                          ],
+                                child: IntrinsicHeight(
+                                  child: Slidable(
+                                    key: Key(doneTaskList[index]["title"]),
+                                    endActionPane: ActionPane(
+                                      motion: const ScrollMotion(),
+                                      children: [
+                                        SlidableAction(
+                                          onPressed: (context) {
+                                            AppDataBase.get(context)
+                                                .deleteFromDB(
+                                                    doneTaskList[index]["id"]);
+                                          },
+                                          backgroundColor: COLORCONST.RED,
+                                          foregroundColor: COLORCONST.WHITE,
+                                          icon: Icons.delete,
+                                          label: "Delete",
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10.0),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Checkbox(
-                                                    checkColor:
-                                                        COLORCONST.WHITE,
-                                                    activeColor:
-                                                        COLORCONST.LIGHTBLUE,
-                                                    value: checkBoxValue,
-                                                    onChanged: (value) {
-                                                      String newStatus;
-                                                      if (value == false) {
-                                                        newStatus =
-                                                            TEXTCONST.UNDONE;
-                                                      } else {
-                                                        newStatus =
-                                                            TEXTCONST.DONE;
-                                                      }
-                                                      setState(() {
-                                                        AppDataBase.get(context)
-                                                            .updateDB(
-                                                                newStatus,
-                                                                doneTaskList[
-                                                                        index]
-                                                                    ["id"]);
-                                                      });
-                                                    },
-                                                  ),
-                                                  Text(
-                                                    doneTaskList[index]
-                                                        ["title"],
-                                                    style: FONTCONST.REGULAR_20,
-                                                  ),
-                                                ],
+                                              Checkbox(
+                                                checkColor: COLORCONST.WHITE,
+                                                activeColor:
+                                                    COLORCONST.LIGHTBLUE,
+                                                value: checkBoxValue,
+                                                onChanged: (value) {
+                                                  String newStatus =
+                                                      getUpdatedStatusString(
+                                                          value);
+                                                  setState(() {
+                                                    AppDataBase.get(context)
+                                                        .updateDB(
+                                                            newStatus,
+                                                            doneTaskList[index]
+                                                                ["id"]);
+                                                  });
+                                                },
                                               ),
-                                              Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.end,
-                                                children: [
-                                                  Text(
-                                                    doneTaskList[index]["date"],
-                                                    style: FONTCONST.REGULAR_20,
-                                                  ),
-                                                  Text(
-                                                    doneTaskList[index]["time"],
-                                                    style: FONTCONST.REGULAR_20,
-                                                  )
-                                                ],
-                                              )
+                                              Text(
+                                                doneTaskList[index]["title"],
+                                                style: FONTCONST.REGULAR_20,
+                                              ),
                                             ],
                                           ),
-                                        ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                doneTaskList[index]["date"],
+                                                style: FONTCONST.REGULAR_20,
+                                              ),
+                                              Text(
+                                                doneTaskList[index]["time"],
+                                                style: FONTCONST.REGULAR_20,
+                                              )
+                                            ],
+                                          )
+                                        ],
                                       ),
-                                    )),
+                                    ),
+                                  ),
+                                ),
                               ),
                             );
                           },

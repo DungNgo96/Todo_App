@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:todo_app/data/storage/database.dart';
 import 'package:todo_app/data/storage/states.dart';
 import 'package:todo_app/presentation/pages/widgets/text_form_field.dart';
+import 'package:todo_app/utils/check_condition.dart';
 import 'package:todo_app/utils/constant/const.dart';
 import 'package:todo_app/utils/formatter.dart';
 
@@ -148,7 +149,6 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                               if (value!.isEmpty) {
                                 return "Date must not be empty";
                               }
-
                               return null;
                             },
                             prefix: Icons.calendar_today),
@@ -188,19 +188,24 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                               style: FONTCONST.REGULAR_WHITE,
                             ),
                           ),
-                          onPressed: () {
-                            db
-                                .insertToDB(
-                                    title: titleController.text,
-                                    time: timeController.text,
-                                    date: dateController.text)
-                                .then((value) {
-                              titleController.clear();
-                              timeController.clear();
-                              dateController.clear();
-                              Navigator.pop(context);
-                            });
-                          },
+                          onPressed: createTaskTextFieldContainInput(
+                                  titleController.text,
+                                  timeController.text,
+                                  dateController.text)
+                              ? () {
+                                  db
+                                      .insertToDB(
+                                          title: titleController.text,
+                                          time: timeController.text,
+                                          date: dateController.text)
+                                      .then((value) {
+                                    titleController.clear();
+                                    timeController.clear();
+                                    dateController.clear();
+                                    Navigator.pop(context);
+                                  });
+                                }
+                              : () {},
                         )
                       ],
                     )
