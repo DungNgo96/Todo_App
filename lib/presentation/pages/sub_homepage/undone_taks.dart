@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:todo_app/data/database.dart';
-import 'package:todo_app/data/states.dart';
-import 'package:todo_app/presentation/pages/widgets/task_item.dart';
+import 'package:todo_app/data/storage/database.dart';
+import 'package:todo_app/data/storage/states.dart';
+import 'package:todo_app/utils/constant/const.dart';
 
 class UndoneTasks extends StatefulWidget {
   const UndoneTasks({Key? key}) : super(key: key);
@@ -30,12 +30,9 @@ class _UndoneTasksState extends State<UndoneTasks> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "All Tasks",
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 35,
-                        fontWeight: FontWeight.w600),
+                  Text(
+                    "Undone Tasks",
+                    style: FONTCONST.SEMIBOLD_36,
                   ),
                   Container(height: size.height * 0.1),
                   undoneTaskList.isNotEmpty
@@ -43,11 +40,9 @@ class _UndoneTasksState extends State<UndoneTasks> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
-                            // return TaskItem(
-                            //   tasks: undoneTaskList[index],
-                            // );
                             bool checkBoxValue;
-                            if (undoneTaskList[index]["status"] == "Undone") {
+                            if (undoneTaskList[index]["status"] ==
+                                TEXTCONST.UNDONE) {
                               checkBoxValue = false;
                             } else {
                               checkBoxValue = true;
@@ -56,7 +51,13 @@ class _UndoneTasksState extends State<UndoneTasks> {
                               padding:
                                   const EdgeInsets.symmetric(vertical: 10.0),
                               child: Container(
-                                color: Colors.grey,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10.0)),
+                                  color: checkBoxValue == false
+                                      ? COLORCONST.ORANGE
+                                      : COLORCONST.GREEN,
+                                ),
                                 height: size.height * 0.1,
                                 child: SafeArea(
                                     top: false,
@@ -64,7 +65,7 @@ class _UndoneTasksState extends State<UndoneTasks> {
                                     child: IntrinsicHeight(
                                       child: Slidable(
                                         key:
-                                            Key(undoneTaskList[index]['title']),
+                                            Key(undoneTaskList[index]["title"]),
                                         endActionPane: ActionPane(
                                           motion: const ScrollMotion(),
                                           children: [
@@ -73,11 +74,10 @@ class _UndoneTasksState extends State<UndoneTasks> {
                                                 AppDataBase.get(context)
                                                     .deleteFromDB(
                                                         undoneTaskList[index]
-                                                            ['id']);
+                                                            ["id"]);
                                               },
-                                              backgroundColor:
-                                                  const Color(0xffdd0044),
-                                              foregroundColor: Colors.white,
+                                              backgroundColor: COLORCONST.RED,
+                                              foregroundColor: COLORCONST.WHITE,
                                               icon: Icons.delete,
                                               label: "Delete",
                                             ),
@@ -93,16 +93,19 @@ class _UndoneTasksState extends State<UndoneTasks> {
                                               Row(
                                                 children: [
                                                   Checkbox(
-                                                    checkColor: Colors.white,
+                                                    checkColor:
+                                                        COLORCONST.WHITE,
                                                     activeColor:
-                                                        const Color(0xff3293DE),
+                                                        COLORCONST.LIGHTBLUE,
                                                     value: checkBoxValue,
                                                     onChanged: (value) {
                                                       String newStatus;
                                                       if (value == false) {
-                                                        newStatus = "Undone";
+                                                        newStatus =
+                                                            TEXTCONST.UNDONE;
                                                       } else {
-                                                        newStatus = "Done";
+                                                        newStatus =
+                                                            TEXTCONST.DONE;
                                                       }
                                                       setState(() {
                                                         AppDataBase.get(context)
@@ -116,12 +119,8 @@ class _UndoneTasksState extends State<UndoneTasks> {
                                                   ),
                                                   Text(
                                                     undoneTaskList[index]
-                                                        ['title'],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w400),
+                                                        ["title"],
+                                                    style: FONTCONST.REGULAR_20,
                                                   ),
                                                 ],
                                               ),
@@ -133,21 +132,13 @@ class _UndoneTasksState extends State<UndoneTasks> {
                                                 children: [
                                                   Text(
                                                     undoneTaskList[index]
-                                                        ['date'],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w400),
+                                                        ["date"],
+                                                    style: FONTCONST.REGULAR_20,
                                                   ),
                                                   Text(
                                                     undoneTaskList[index]
-                                                        ['time'],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w400),
+                                                        ["time"],
+                                                    style: FONTCONST.REGULAR_20,
                                                   )
                                                 ],
                                               )

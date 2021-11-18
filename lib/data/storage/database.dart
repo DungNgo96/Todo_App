@@ -3,10 +3,11 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common/sqlite_api.dart';
-import 'package:todo_app/data/states.dart';
+import 'package:todo_app/data/storage/states.dart';
 import 'package:todo_app/presentation/pages/sub_homepage/all_tasks.dart';
 import 'package:todo_app/presentation/pages/sub_homepage/done_tasks.dart';
 import 'package:todo_app/presentation/pages/sub_homepage/undone_taks.dart';
+import 'package:todo_app/utils/constant/const.dart';
 
 class AppDataBase extends Cubit<AppStates> {
   AppDataBase() : super(AppInitialState());
@@ -28,15 +29,15 @@ class AppDataBase extends Cubit<AppStates> {
   }
 
   void updateDB(String status, int id) async {
-    database!.rawUpdate('UPDATE tasks SET status = ? WHERE id = ?',
-        ['$status', id]).then((value) {
+    database!.rawUpdate("UPDATE tasks SET status = ? WHERE id = ?",
+        ["$status", id]).then((value) {
       getDB(database);
       emit(AppUpdateDatabaseState());
     });
   }
 
   void deleteFromDB(int id) async {
-    database!.rawDelete('DELETE FROM tasks WHERE id = ?', [id]).then((value) {
+    database!.rawDelete("DELETE FROM tasks WHERE id = ?", [id]).then((value) {
       getDB(database);
       emit(AppDeleteDatabaseState());
     });
@@ -49,11 +50,9 @@ class AppDataBase extends Cubit<AppStates> {
       onCreate: (db, version) {
         db
             .execute(
-                'CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT, date TEXT, time TEXT, status TEXT)')
+                "CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT, date TEXT, time TEXT, status TEXT)")
             .then((value) => null)
-            .catchError((error) {
-          print('Error When Creating Table ${error.toString()}');
-        });
+            .catchError((error) {});
       },
       onOpen: (db) {
         getDB(db);
@@ -70,10 +69,10 @@ class AppDataBase extends Cubit<AppStates> {
     undoneTasks = [];
     db!.rawQuery("SELECT * FROM tasks").then((value) {
       value.forEach((item) {
-        if (item["status"] == "Undone") {
+        if (item["status"] == TEXTCONST.UNDONE) {
           undoneTasks.add(item);
         }
-        if (item["status"] == "Done") {
+        if (item["status"] == TEXTCONST.DONE) {
           doneTasks.add(item);
         }
         allTasks.add(item);
@@ -92,11 +91,8 @@ class AppDataBase extends Cubit<AppStates> {
               'INSERT INTO tasks (title, date, time, status) VALUES ("$title","$date","$time","Undone")')
           .then((value) {
         getDB(database);
-        print('$value Inserted Successfully');
         emit(AppInsertDatabaseState());
-      }).catchError((error) {
-        print('Error When inserting Table ${error.toString()}');
-      });
+      }).catchError((error) {});
     });
   }
 }

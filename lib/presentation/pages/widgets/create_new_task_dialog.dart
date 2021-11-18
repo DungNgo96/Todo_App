@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:todo_app/data/database.dart';
-import 'package:todo_app/data/states.dart';
+import 'package:todo_app/data/storage/database.dart';
+import 'package:todo_app/data/storage/states.dart';
 import 'package:todo_app/presentation/pages/widgets/text_form_field.dart';
+import 'package:todo_app/utils/constant/const.dart';
+import 'package:todo_app/utils/formatter.dart';
 
 class CreateNewTaskDialog extends StatefulWidget {
   const CreateNewTaskDialog({Key? key}) : super(key: key);
@@ -13,15 +15,12 @@ class CreateNewTaskDialog extends StatefulWidget {
 }
 
 class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
-  // bool isAgree = false;
-  // ScrollController scrollController = new ScrollController();
   TextEditingController titleController = TextEditingController();
   TextEditingController timeController = TextEditingController();
   TextEditingController dateController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    // ThemeData theme = Theme.of(context);
     Size size = MediaQuery.of(context).size;
 
     return BlocConsumer<AppDataBase, AppStates>(
@@ -44,7 +43,7 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                       topRight: Radius.circular(15),
                       bottomRight: Radius.circular(15),
                       bottomLeft: Radius.circular(15)),
-                  color: Color(0xffffffff),
+                  color: COLORCONST.WHITE,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -55,12 +54,9 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                         Container(
                           height: size.height * 0.05,
                           alignment: Alignment.centerLeft,
-                          child: const Text(
+                          child: Text(
                             "Create Task",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 24.0,
-                                color: Colors.black),
+                            style: FONTCONST.BOLD_24,
                           ),
                         ),
                         GestureDetector(
@@ -69,9 +65,6 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                             timeController.clear();
                             dateController.clear();
                             Navigator.pop(context);
-                            // print("Title: " + titleController.text);
-                            // print("Time: " + timeController.text);
-                            // print("Date: " + dateController.text);
                           },
                           child: const Icon(
                             Icons.close,
@@ -80,88 +73,86 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                         )
                       ],
                     ),
-                    Form(
-                      // key: formKey,
-                      child: Column(
-                        //mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          DefaultFormField(
-                            controller: titleController,
-                            label: 'New Task',
-                            type: TextInputType.text,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        DefaultFormField(
+                          controller: titleController,
+                          label: "New Task",
+                          hintText: "Enter new task",
+                          type: TextInputType.text,
+                          validate: (String? value) {
+                            if (value!.isEmpty) {
+                              return "Title must not be empty";
+                            }
+                            return null;
+                          },
+                          prefix: Icons.title,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        DefaultFormField(
+                            onTap: () {
+                              showTimePicker(
+                                      context: context,
+                                      initialTime: checkInputtedTime(
+                                          timeController.text))
+                                  .then((value) {
+                                var checkNullValue = value;
+                                if (checkNullValue != null) {
+                                  timeController.text = value!.format(context);
+                                }
+                              });
+                            },
+                            readOnly: true,
+                            controller: timeController,
+                            label: "Task Time",
+                            hintText: "Select new time",
+                            type: TextInputType.datetime,
                             validate: (String? value) {
                               if (value!.isEmpty) {
-                                return 'Title must not be empty';
+                                return "Time must not be empty";
                               }
                               return null;
                             },
-                            prefix: Icons.title,
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          DefaultFormField(
-                              onTap: () {
-                                showTimePicker(
-                                        context: context,
-                                        initialTime: checkInputtedTime(
-                                            timeController.text))
-                                    .then((value) {
-                                  var checkNullValue = value;
-                                  if (checkNullValue != null) {
-                                    timeController.text =
-                                        value!.format(context);
-                                  }
-                                });
-                              },
-                              readOnly: true,
-                              controller: timeController,
-                              label: 'Task Time',
-                              type: TextInputType.datetime,
-                              validate: (String? value) {
-                                if (value!.isEmpty) {
-                                  return 'Time must not be empty';
+                            prefix: Icons.watch_later_outlined),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        DefaultFormField(
+                            onTap: () {
+                              showDatePicker(
+                                      context: context,
+                                      initialDate: checkInputtedDate(
+                                          dateController.text),
+                                      firstDate: DateTime.now(),
+                                      lastDate: DateTime.parse("2022-10-03"))
+                                  .then((value) {
+                                var checkNullValue = value;
+                                if (checkNullValue != null) {
+                                  dateController.text =
+                                      DateFormat.yMMMd().format(value!);
                                 }
-                                return null;
-                              },
-                              prefix: Icons.watch_later_outlined),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          DefaultFormField(
-                              onTap: () {
-                                showDatePicker(
-                                        context: context,
-                                        initialDate: checkInputtedDate(
-                                            dateController.text),
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.parse('2022-10-03'))
-                                    .then((value) {
-                                  var checkNullValue = value;
-                                  if (checkNullValue != null) {
-                                    dateController.text =
-                                        DateFormat.yMMMd().format(value!);
-                                  }
-                                });
-                              },
-                              readOnly: true,
-                              controller: dateController,
-                              label: 'Task Deadline',
-                              type: TextInputType.datetime,
-                              validate: (String? value) {
-                                if (value!.isEmpty) {
-                                  return 'Date must not be empty';
-                                }
+                              });
+                            },
+                            readOnly: true,
+                            controller: dateController,
+                            label: "Task Deadline",
+                            hintText: "Select new deadline",
+                            type: TextInputType.datetime,
+                            validate: (String? value) {
+                              if (value!.isEmpty) {
+                                return "Date must not be empty";
+                              }
 
-                                return null;
-                              },
-                              prefix: Icons.calendar_today),
-                        ],
-                      ),
+                              return null;
+                            },
+                            prefix: Icons.calendar_today),
+                      ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -172,10 +163,11 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5.0),
                                 side:
-                                    const BorderSide(color: Color(0x95171717))),
+                                    const BorderSide(color: COLORCONST.BLACK2)),
                             child: const Center(
                               child: Text(
                                 "Cancel",
+                                style: FONTCONST.REGULAR,
                               ),
                             ),
                             onPressed: () {
@@ -187,13 +179,13 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
                           ),
                         ),
                         MaterialButton(
-                          color: const Color(0x95171717),
+                          color: COLORCONST.BLACK2,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5.0)),
-                          child: const Center(
+                          child: Center(
                             child: Text(
                               "Create",
-                              style: TextStyle(color: Colors.white),
+                              style: FONTCONST.REGULAR_WHITE,
                             ),
                           ),
                           onPressed: () {
@@ -218,22 +210,5 @@ class _CreateNewTaskDialogState extends State<CreateNewTaskDialog> {
         );
       },
     );
-  }
-
-  TimeOfDay checkInputtedTime(String time) {
-    if (time != "" && time.isNotEmpty) {
-      final format = DateFormat.jm();
-      return TimeOfDay.fromDateTime(format.parse(time));
-    } else {
-      return TimeOfDay.now();
-    }
-  }
-
-  DateTime checkInputtedDate(String date) {
-    if (date != "" && date.isNotEmpty) {
-      return DateFormat("MMM dd, yyyy").parse(date);
-    } else {
-      return DateTime.now();
-    }
   }
 }
